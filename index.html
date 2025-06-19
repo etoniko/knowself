@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Путь к ответам вселенной для тебя!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", sans-serif;
+      background-color: #fff;
+      color: #222;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1,
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      background: #f3f3f3;
+      padding: 24px;
+      margin-bottom: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .section img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin: 16px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 12px 20px;
+      background: #222;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #444;
+    }
+
+    /* Грид из 2 карточек */
+    .program-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    /* Карточка */
+    .program-item {
+      width: 100%;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: visible;
+    }
+
+    @media (min-width: 601px) {
+      .program-item {
+        width: calc(50% - 10px);
+      }
+
+      .program-content {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        padding: 16px 18px;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition: all 0.35s ease;
+        z-index: 10;
+      }
+
+      .program-content.open {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+    }
+
+    /* MOBILE версия — обычное раскрытие вниз */
+    @media (max-width: 600px) {
+      .program-item {
+        width: 100%;
+      }
+
+      .program-content {
+        position: static;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        padding: 0 18px;
+        transition: max-height 0.4s ease, padding 0.4s ease, opacity 0.4s ease;
+      }
+
+      .program-content.open {
+        max-height: 600px;
+        padding: 16px 18px;
+        opacity: 1;
+      }
+    }
+
+    /* Кнопка переключения */
+    .toggle-btn {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #e9e9e9;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      z-index: 1;
+      position: relative;
+    }
+
+    .toggle-btn:hover {
+      background: #ddd;
+    }
+
+    .toggle-btn i {
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-btn.open i {
+      transform: rotate(180deg);
+    }
+
+    /* Форма */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    input,
+    textarea {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    input:focus {
+      border-color: #999;
+      outline: none;
+    }
+
+    button[type="submit"] {
+      background: #222;
+      color: #fff;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #444;
+    }
+	
+ #overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 20px;
+    box-sizing: border-box;
+
+    /* Фон делаем прозрачным — видео внутри */
+    background-color: white;
+
+    /* Маска будет задаваться динамически через JS */
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  /* Видео — растянуть на весь экран, на заднем плане */
+  #overlay video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1; /* чтобы было под остальными элементами */
+  }
+
+  /* Черный круг */
+  #reveal-portal {
+    width: 100px;
+    height: 100px;
+    background: black;
+    border-radius: 50%;
+    pointer-events: none; /* чтобы не мешал кликам */
+  }
+
+  /* Текст */
+  #overlay-text {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+    color: white;
+    user-select: none;
+    max-width: 600px;
+  }
+
+  </style>
+</head>
+<body>
+
+  <div id="overlay" role="button" tabindex="0" aria-label="Закрыть оверлей">
+    <!-- Видео фон -->
+  <video autoplay muted loop playsinline>
+    <source src="https://videocdn.cdnpk.net/videos/1b627a2e-4ef8-4d3b-8f88-ca7ffc341055/horizontal/previews/clear/large.mp4?token=exp=1750333093~hmac=ff5b5baad37b28209fe81ed8e7ada6afcc357c07a6f61d2bf36938fe6203a0ff" type="video/webm" />
+    Ваш браузер не поддерживает видео.
+  </video>
+    <div id="reveal-portal"></div>
+    <div id="overlay-text">Путь к ответам <br>вселенной для тебя!</div>
+  </div>
+  
+  <div class="container">
+    <h1><i class="fa-solid fa-star"></i> Путь к ответам вселенной для тебя!</h1>
+
+    <section class="section">
+      <h2>Образовательный познавательный тур выходного дня</h2>
+      <img src="" alt="Звездное небо" />
+      <p>
+        Приглашаем вас в уникальное путешествие к познанию себя и мира!
+        Проведите незабываемые выходные, открывая тайны натальной карты,
+        гармонизируя биополе и заряжаясь энергией в местах силы
+        Подмосковья.
+      </p>
+      <a href="#form" class="btn"><i class="fa-solid fa-circle-info"></i> Подробнее</a>
+    </section>
+
+    <section class="section">
+      <h2>Программа тура:</h2>
+      <div class="program-grid">
+        <div class="program-item">
+          <button class="toggle-btn">
+            <span>1. Изучение натальной карты</span>
+            <i class="fa-solid fa-angle-down"></i>
+          </button>
+          <div class="program-content">
+            <img src="" alt="Натальная карта" />
+            <p>
+              Раскройте свой потенциал, узнайте свои сильные и слабые стороны с
+              профессиональным астрологом.
+            </p>
+          </div>
+        </div>
+
+        <div class="program-item">
+          <button class="toggle-btn">
+            <span>2. Диагностика биополя</span>
+            <i class="fa-solid fa-angle-down"></i>
+          </button>
+          <div class="program-content">
+            <img src="" alt="Биополе" />
+            <p>
+              Опытный биоэнерготерапевт проведет диагностику и обучит коррекции
+              биополя.
+            </p>
+          </div>
+        </div>
+
+        <div class="program-item">
+          <button class="toggle-btn">
+            <span>3. Посещение мест силы</span>
+            <i class="fa-solid fa-angle-down"></i>
+          </button>
+          <div class="program-content">
+            <img src="" alt="Лес" />
+            <p>
+              Наполнитесь жизненной энергией в живописных местах Подмосковья с
+              медитациями и практиками.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="form">
+      <h2>Подача заявки</h2>
+      <form>
+        <label for="name">Имя:</label>
+        <input type="text" id="name" name="name" required />
+
+        <label for="phone">Номер телефона:</label>
+        <input type="tel" id="phone" name="phone" required />
+
+        <label for="email">Почта:</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="birthdatetime">Дата и Время рождения:</label>
+        <input type="datetime-local" id="birthdatetime" name="birthdatetime" required />
+
+        <label for="birthplace">Место рождения:</label>
+        <input type="text" id="birthplace" name="birthplace" required />
+
+        <button type="submit"><i class="fa-solid fa-paper-plane"></i> Отправить заявку</button>
+      </form>
+    </section>
+  </div>
+
+  <script>
+  
+function updateRevealPortalMask(radiusOverride) {
+  const overlay = document.getElementById('overlay');
+  const portal = document.getElementById('reveal-portal');
+
+  const rect = portal.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  const radius = (typeof radiusOverride === 'number') ? radiusOverride : rect.width / 2;
+  const feather = 2; // мягкий переход на границе
+
+  const maskStyle = `radial-gradient(
+    circle ${radius + feather}px at ${cx}px ${cy}px,
+    transparent 0%,
+    transparent ${radius}px,
+    black ${radius + feather}px,
+    black 100%
+  )`;
+
+  overlay.style.backgroundColor = 'transparent';
+  overlay.style.webkitMaskImage = maskStyle;
+  overlay.style.maskImage = maskStyle;
+
+  portal.style.backgroundColor = 'transparent';
+  portal.style.pointerEvents = 'none';
+}
+
+
+// Анимация раскрытия круга (увеличение радиуса)
+function animateRevealPortal() {
+  const overlay = document.getElementById('overlay');
+  const portal = document.getElementById('reveal-portal');
+  const rect = portal.getBoundingClientRect();
+
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // Максимальный радиус — максимальное расстояние от центра круга до краёв окна (чтобы круг закрыл весь экран)
+  const maxRadius = Math.max(
+    cx,                // расстояние до левого края окна
+    window.innerWidth - cx,  // до правого края
+    cy,                // до верхнего
+    window.innerHeight - cy  // до нижнего
+  );
+
+  let currentRadius = rect.width / 2;
+  const step = maxRadius / 30;  // 30 кадров анимации (около 500-600мс)
+  const intervalMs = 15;
+
+  function stepAnimation() {
+    currentRadius += step;
+    if (currentRadius >= maxRadius) {
+      // Завершаем анимацию, скрываем overlay
+      updateRevealPortalMask(maxRadius);
+      overlay.style.display = 'none';
+      return;
+    }
+    updateRevealPortalMask(currentRadius);
+    requestAnimationFrame(stepAnimation);
+  }
+
+  requestAnimationFrame(stepAnimation);
+}
+
+// Инициализация
+window.addEventListener('load', () => {
+  updateRevealPortalMask();
+
+  const overlay = document.getElementById('overlay');
+
+  // Клик по overlay — запускает анимацию и скрывает overlay
+  overlay.addEventListener('click', () => {
+    animateRevealPortal();
+  });
+
+  // Автоматически скрыть через 15 секунд с анимацией
+  setTimeout(() => {
+    if (overlay.style.display !== 'none') {
+      animateRevealPortal();
+    }
+  }, 150000000);
+});
+
+// Обновляем маску при ресайзе, если overlay виден
+window.addEventListener('resize', () => {
+  const overlay = document.getElementById('overlay');
+  if (overlay.style.display !== 'none') {
+    updateRevealPortalMask();
+  }
+});
+
+
+
+    document.querySelectorAll(".toggle-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const content = btn.nextElementSibling;
+        const isOpen = content.classList.contains("open");
+
+        document.querySelectorAll(".program-content").forEach((el) =>
+          el.classList.remove("open")
+        );
+        document.querySelectorAll(".toggle-btn").forEach((el) =>
+          el.classList.remove("open")
+        );
+
+        if (!isOpen) {
+          content.classList.add("open");
+          btn.classList.add("open");
+        }
+      });
+    });
+	
+	
+  </script>
+</body>
+</html>
